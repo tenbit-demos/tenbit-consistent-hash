@@ -7,7 +7,6 @@ import domain.ClientRequest;
 import domain.ClientResponse;
 import support.BeanContainer;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,16 +17,19 @@ public class Client implements Runnable {
 
     private final PersonService service = BeanContainer.getInstance().getPersonService();
 
-    private final Random random = new Random();
+    private static final long MIN = 0L;
+    private static final long MAX = 1000L;
 
     @Override
     public void run() {
         while (true) {
-            ClientRequest request = new ClientRequest();
-            request.setId(random.nextLong());
-            ClientResponse response = service.query(request);
-            // HarePrintUtils.jsonConsole(response);
-            HareSleepUtils.sleep(TimeUnit.MILLISECONDS, Config.CLIENT_MS_SPEED);
+            for (long idx = MIN; idx < MAX; idx++) {
+                ClientRequest request = new ClientRequest();
+                request.setId(idx);
+                ClientResponse response = service.query(request);
+                // HarePrintUtils.jsonConsole(response);
+                HareSleepUtils.sleep(TimeUnit.MILLISECONDS, Config.CLIENT_MS_SPEED);
+            }
         }
     }
 }
