@@ -65,17 +65,20 @@ public class NetCacheColony<T, ID extends Serializable> implements Cache<T, ID>,
         return strategy.calc(id);
     }
 
+    private static final long MAX_DISTANCE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
+
     private NetCacheNode<T, ID> findNodeByNetId(Integer netid) {
         return handleWithReadLock(() -> {
+            long distance = MAX_DISTANCE;
             boolean bfind = false;
-            int find = -1;
-            for (Integer n : net) {
-                if (n < netid) {
-                    continue;
+            int find = 0;
+            for (Integer id : net) {
+                long d = Math.abs(netid - id);
+                if (d < distance) {
+                    distance = d;
+                    find = id;
+                    bfind = true;
                 }
-                find = n;
-                bfind = true;
-                break;
             }
             if (!bfind) {
                 return null;
@@ -137,6 +140,10 @@ public class NetCacheColony<T, ID extends Serializable> implements Cache<T, ID>,
             }
             if (net.size() < 1) {
                 insert = 0;
+                binsert = true;
+            }
+            if (net.size() > 0) {
+                insert = net.size();
                 binsert = true;
             }
             if (binsert) {

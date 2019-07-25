@@ -12,18 +12,21 @@ import java.io.Serializable;
  */
 public class NetCacheNode<T, ID extends Serializable> implements Cache<T, ID>, Statusable<NetCacheNode.Status> {
 
-    private final String rawIp;
+    private final String[] rawIp;
 
     @Getter
-    private final int ip;
+    private final int[] ip;
 
     private final Cache<T, ID> node;
     private final Status status = new Status();
 
-    public NetCacheNode(String rawIp) {
-        this.rawIp = rawIp;
+    public NetCacheNode(String[] rawIps) {
+        this.rawIp = rawIps;
         this.node = new QpsCacheNode<>(new TtlCacheNode<>(new CacheNode<>()));
-        this.ip = HareInet4AddressUtils.text2Number(rawIp);
+        this.ip = new int[rawIps.length];
+        for (int idx = 0; idx < ip.length; idx++) {
+            ip[idx] = HareInet4AddressUtils.text2Number(rawIps[idx]);
+        }
     }
 
     @Override
@@ -60,8 +63,8 @@ public class NetCacheNode<T, ID extends Serializable> implements Cache<T, ID>, S
     @Getter
     public static class Status {
 
-        private volatile String rawIp;
-        private volatile int ip;
+        private volatile String[] rawIp;
+        private volatile int[] ip;
         private volatile int size;
 
         private volatile Object qps;

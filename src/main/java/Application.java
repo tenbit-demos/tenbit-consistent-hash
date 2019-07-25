@@ -1,6 +1,6 @@
 import cache.NetCacheManager;
 import cache.NetCacheNode;
-import client.Client;
+import client.RandomClient;
 import cn.tenbit.hare.core.lite.util.HarePrintUtils;
 import cn.tenbit.hare.core.lite.util.HareSleepUtils;
 import domain.Person;
@@ -12,11 +12,13 @@ import java.util.concurrent.ExecutorService;
 
 interface AppConfig {
 
+    String logfile = "/Users/chainz/Temporary/consistent-hash.txt";
+
     int CLIENT_NUM = 10;
 
-    int APP_RUN_SECONDS = 30;
+    int APP_RUN_SECONDS = 60 * 10;
 
-    String[] ips = {"172.10.32.1"};
+    String[] ips = {"255.255.255.255", "1.1.1.1", "64.64.64.64", "127.127.127.127", "192.192.192.192"};
 }
 
 /**
@@ -32,19 +34,21 @@ public class Application {
         BeanContainer container = BeanContainer.getInstance();
 
         NetCacheManager<Person, Long> cacheManager = container.getCacheManager();
-        for (String ip : AppConfig.ips) {
-            NetCacheNode<Person, Long> node = new NetCacheNode<>(ip);
-            HarePrintUtils.jsonConsole(ip, cacheManager.putNode(node.getIp(), node));
+        for (String sip : AppConfig.ips) {
+            NetCacheNode<Person, Long> node = new NetCacheNode<>(new String[]{sip});
+            for (int ip : node.getIp()) {
+                HarePrintUtils.jsonConsole(sip, ip, cacheManager.putNode(ip, node));
+            }
         }
 
         ExecutorService executorService = ExecuteThreadPool.getPool();
 
         tip("--- RUN ---");
 
-        executorService.execute(new StatisticsMonitor());
+        executorService.execute(StatisticsMonitor.of(AppConfig.logfile));
 
         for (int idx = 0; idx < AppConfig.CLIENT_NUM; idx++) {
-            executorService.execute(new Client());
+            executorService.execute(new RandomClient());
         }
 
         HareSleepUtils.sleepSeconds(AppConfig.APP_RUN_SECONDS);

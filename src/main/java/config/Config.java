@@ -6,7 +6,7 @@ package config;
  */
 public interface Config {
 
-    int CLIENT_MS_SPEED = 100;
+    int CLIENT_MS_SPEED = 10;
 
     int STATISTICS_MONITOR_S_SPEED = 3;
 

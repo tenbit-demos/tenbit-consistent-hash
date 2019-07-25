@@ -1,16 +1,14 @@
 package support;
 
-import cn.tenbit.hare.core.lite.util.HareJsonUtils;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-
-import java.util.HashMap;
-import java.util.Map;
+import cache.NetCacheColony;
+import data.impl.StatusablePersonDao;
+import lombok.Getter;
 
 /**
  * @Author bangquan.qian
  * @Date 2019-07-23 11:21
  */
-public class Statistics implements Statusable<String> {
+public class Statistics implements Statusable<Statistics.Status> {
 
     private Statistics() {
     }
@@ -19,23 +17,23 @@ public class Statistics implements Statusable<String> {
         return Instance.INSTANCE;
     }
 
+
+    private final Status status = new Status();
+
     @Override
-    public String getStatus() {
-        Map<String, Object> map = new HashMap<>();
-        showDbStat(map);
-        showCacheStat(map);
-        return HareJsonUtils.toJsonString(map, SerializerFeature.PrettyFormat);
-    }
-
-    private void showCacheStat(Map<String, Object> map) {
-        map.put("cache", BeanContainer.getInstance().getCacheColony().getStatus());
-    }
-
-    private void showDbStat(Map<String, Object> map) {
-        map.put("db", BeanContainer.getInstance().getStatusablePersonDao().getStatus());
+    public Status getStatus() {
+        status.cache = BeanContainer.getInstance().getCacheColony().getStatus();
+        status.db = BeanContainer.getInstance().getStatusablePersonDao().getStatus();
+        return status;
     }
 
     private static class Instance {
         private static final Statistics INSTANCE = new Statistics();
+    }
+
+    @Getter
+    public static class Status {
+        private volatile NetCacheColony.Status cache;
+        private volatile StatusablePersonDao.Status db;
     }
 }
